@@ -1,13 +1,10 @@
 from fastapi import FastAPI
+from app.api import roles, users, sup, rent
 
 app = FastAPI()
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+# Include routers
+app.include_router(roles.router, prefix="/api", tags=["roles"])
+app.include_router(users.router, prefix="/api", tags=["users"])
+app.include_router(sup.router, prefix="/api", tags=["sups"])
+app.include_router(rent.router, prefix="/api", tags=["rents"])
