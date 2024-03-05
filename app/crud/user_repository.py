@@ -26,13 +26,13 @@ class UserRepository(BaseRepository[User]):
         await self.db_session.refresh(user)  # Refresh instance
         return user
 
-    async def delete_user(self, user_id: int) -> Optional[User]:
+    async def delete_user(self, user_id: int) -> bool:
         user = await self.db_session.get(User, user_id)
         if user:
-            await self.db_session.delete(user)  # Delete user asynchronously
-            await self.db_session.commit()  # Commit changes
-            return user
-        return None  # User not found
+            await self.db_session.delete(user)  # Correctly awaited
+            await self.db_session.commit()
+            return True
+        return False
 
     async def get_user_by_telegram_id(self, telegram_id: int) -> Optional[User]:
         query = select(User).where(User.telegram_id == telegram_id)

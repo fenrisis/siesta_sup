@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.openapi.models import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user_schema import UserCreate, UserUpdate, UserOut
 from app.crud.user_repository import UserRepository
@@ -39,7 +40,7 @@ async def update_user(user_id: int, user_data: UserUpdate, db: AsyncSession = De
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_async_session)):
     user_repo = UserRepository(db)
-    user = await user_repo.delete_user(user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content={"message": "User deleted successfully"})
+    success = await user_repo.delete_user(user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    # No need to return a JSONResponse or any other body

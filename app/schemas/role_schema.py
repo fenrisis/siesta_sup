@@ -2,6 +2,7 @@ from pydantic.types import Json
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 
+
 class RoleBase(BaseModel):
     name: str
 

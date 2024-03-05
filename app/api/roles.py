@@ -45,10 +45,3 @@ async def delete_role(role_id: int, db: AsyncSession = Depends(get_async_session
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
     return role
 
-@router.delete("/roles/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_role(role_id: int, db: AsyncSession = Depends(get_async_session)):
-    role_repo = RoleRepository(db)
-    role = await role_repo.delete(role_id)
-    if role is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
-    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content={"message": "Role deleted successfully"})
