@@ -4,11 +4,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.sup_schema import SupCreate, SupUpdate, SupOut
 from app.crud.sup_repository import SupRepository
 from app.core.database import get_async_session
+from fastapi import File, UploadFile, Form
 
 router = APIRouter()
 
 @router.post("/sups/", response_model=SupOut, status_code=status.HTTP_201_CREATED)
-async def create_sup(sup_create: SupCreate, db: AsyncSession = Depends(get_async_session)):
+async def create_sup(
+    name: str = Form(...),
+    price: int = Form(...),
+    quantity: int = Form(...),
+    picture: UploadFile = File(None),  # Optional file upload
+    db: AsyncSession = Depends(get_async_session)
+):
+    sup_create = SupCreate(name=name, price=price, quantity=quantity, picture=picture)
     sup_repo = SupRepository(db)
     sup = await sup_repo.create_sup(sup_create)
     return sup

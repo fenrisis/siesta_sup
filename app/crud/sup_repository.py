@@ -5,16 +5,32 @@ from app.models.models import Sup
 from app.schemas.sup_schema import SupCreate, SupUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
+import shutil
+from pathlib import Path
+
 
 class SupRepository(BaseRepository[Sup]):
     def __init__(self, db_session: AsyncSession):
         super().__init__(db_session, Sup)
 
     async def create_sup(self, sup_create: SupCreate) -> Sup:
-        sup = Sup(**sup_create.dict())
-        self.db_session.add(sup)  # Correct usage
-        await self.db_session.commit()  # Correct usage
-        await self.db_session.refresh(sup)  # Correct usage
+        # If an image is uploaded, save it to the 'sup_images' directory
+        if sup_create.picture:
+            image_path = Path('media/sup_images') / sup_create.picture.filename
+            image_path.parent.mkdir(parents=True, exist_ok=True)  # Create directory if doesn't exist
+            with image_path.open('wb') as buffer:
+                shutil.copyfileobj(sup_create.picture.file, buffer)
+            image_url = f'/media/sup_images/{image_path.name}'  # Relative URL for accessing the image
+        else:
+            image_url = None
+
+        # Create Sup with image URL
+        sup_data = sup_create.dict()
+        sup_data['picture'] = image_url
+        sup = Sup(**sup_data)
+        self.db_session.add(sup)
+        await self.db_session.commit()
+        await self.db_session.refresh(sup)
         return sup
 
     async def update_sup(self, sup_id: int, sup_update: SupUpdate) -> Sup:
@@ -42,3 +58,4 @@ class SupRepository(BaseRepository[Sup]):
         await self.db_session.delete(sup)  # Correct usage
         await self.db_session.commit()  # Correct usage
         return sup
+
